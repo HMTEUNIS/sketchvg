@@ -3,6 +3,7 @@ import { Toolbar } from "@/components/Toolbar";
 import { TopBar } from "@/components/TopBar";
 import { DrawingCanvas, type DrawingCanvasRef } from "@/components/DrawingCanvas";
 import { ColorPickerDialog } from "@/components/ColorPickerDialog";
+import { RotationPrompt } from "@/components/RotationPrompt";
 import { exportCanvasToSVG, downloadSVG } from "@/lib/canvasExport";
 import type { Tool, ShapeMode, DrawAction } from "@/lib/drawingTypes";
 import { COLOR_PALETTE } from "@/lib/drawingTypes";
@@ -103,6 +104,8 @@ export default function Paint() {
 
   return (
     <div className="h-screen w-screen flex flex-col overflow-hidden">
+      <RotationPrompt />
+      
       <TopBar
         selectedColor={selectedColor}
         brushSize={brushSize}

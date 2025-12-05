@@ -20,7 +20,7 @@ export function ShapeModeToggle({ mode, onChange }: ShapeModeToggleProps) {
         size="icon"
         onClick={() => onChange('fill')}
         className={cn(
-          "w-10 h-10",
+          "w-10 h-10 max-md:w-[30px] max-md:h-[30px]", // 3/4 size on mobile (40px -> 30px)
           mode === 'fill' && "ring-1 ring-ring"
         )}
         data-testid="button-shape-mode-fill"
@@ -28,7 +28,7 @@ export function ShapeModeToggle({ mode, onChange }: ShapeModeToggleProps) {
         role="radio"
         aria-label="Fill"
       >
-        <Square className="w-5 h-5 fill-current" />
+        <Square className="w-5 h-5 max-md:w-[15px] max-md:h-[15px] fill-current" /> {/* 3/4 size on mobile (20px -> 15px) */}
       </Button>
 
       <Button
@@ -36,7 +36,7 @@ export function ShapeModeToggle({ mode, onChange }: ShapeModeToggleProps) {
         size="icon"
         onClick={() => onChange('outline')}
         className={cn(
-          "w-10 h-10",
+          "w-10 h-10 max-md:w-[30px] max-md:h-[30px]", // 3/4 size on mobile (40px -> 30px)
           mode === 'outline' && "ring-1 ring-ring"
         )}
         data-testid="button-shape-mode-outline"
@@ -44,7 +44,7 @@ export function ShapeModeToggle({ mode, onChange }: ShapeModeToggleProps) {
         role="radio"
         aria-label="Outline"
       >
-        <SquareDashedBottom className="w-5 h-5" />
+        <SquareDashedBottom className="w-5 h-5 max-md:w-[15px] max-md:h-[15px]" /> {/* 3/4 size on mobile (20px -> 15px) */}
       </Button>
     </div>
   );
