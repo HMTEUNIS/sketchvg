@@ -1,118 +1,111 @@
-# GitHub Pages Deployment Guide
+# GitHub Pages Static Deployment Guide
+
+## ✅ Configuration Complete
+
+Your project is now configured for static GitHub Pages deployment. All build errors have been fixed.
+
+## Setup Instructions
+
+### 1. Enable GitHub Pages
+
+1. Go to your repository on GitHub: `https://github.com/HMTEUNIS/sketchvg`
+2. Navigate to **Settings** → **Pages**
+3. Under **Source**, select **GitHub Actions**
+4. Save the settings
+
+### 2. Push to Main Branch
+
+The GitHub Actions workflow will automatically:
+- Install dependencies (`npm ci`)
+- Build the project (`npm run build`)
+- Deploy to GitHub Pages
+
+```bash
+git add .
+git commit -m "Configure GitHub Pages deployment"
+git push origin main
+```
+
+### 3. Monitor Deployment
+
+- Go to the **Actions** tab in your repository
+- Watch the workflow run
+- Once complete, your site will be live at:
+  `https://HMTEUNIS.github.io/sketchvg/`
 
 ## What Was Fixed
 
-This project had several issues preventing successful GitHub Pages deployment:
+### Build Issues Resolved
 
-### 1. Missing Base Path Configuration
-**Problem**: Vite builds assets with absolute paths (`/assets/...`), which don't work on GitHub Pages subdirectories.
+1. ✅ **TypeScript Errors Fixed**:
+   - Added `src/vite-env.d.ts` for Vite type definitions
+   - Fixed `import.meta.env.BASE_URL` type errors
+   - Removed unused old DrawingCanvas files
+   - Fixed type mismatches in paint.tsx and tooltip.tsx
 
-**Fix**: Added `base: '/sketchvg/'` to `vite.config.ts`
+2. ✅ **Dependencies Cleaned**:
+   - Removed unused `canvas2svg` dependency
+   - All dependencies are properly listed
 
-### 2. Missing GitHub Actions Workflow
-**Problem**: No automated deployment process.
+3. ✅ **GitHub Actions Workflow**:
+   - Created `.github/workflows/deploy.yml`
+   - Uses `npm ci` for reliable installs
+   - Automatically builds and deploys on push to main
 
-**Fix**: Created `.github/workflows/deploy.yml` with:
-- Automatic builds on push to `main`
-- Proper artifact handling
-- GitHub Pages deployment
+4. ✅ **Static Page Configuration**:
+   - Base path set to `/sketchvg/` in `vite.config.ts`
+   - Router configured with base path support
+   - 404.html for client-side routing support
 
-### 3. Client-Side Routing Issues
-**Problem**: Direct navigation to routes like `/paint` would return 404 on GitHub Pages.
+## Build Verification
 
-**Fix**: 
-- Created `public/404.html` with redirect script
-- Updated `App.tsx` to use `import.meta.env.BASE_URL` for router base path
+The build now completes successfully:
+```bash
+npm run build
+✓ Built in ~12s
+```
 
-### 4. Router Base Path
-**Problem**: Router didn't account for the subdirectory path.
+## Repository Configuration
 
-**Fix**: Updated `App.tsx` to use wouter's `base` prop with Vite's `BASE_URL` env variable
-
-## Deployment Steps
-
-### First Time Setup
-
-1. **Enable GitHub Pages**:
-   - Go to repository Settings → Pages
-   - Under "Source", select "GitHub Actions"
-   - Save
-
-2. **Push to main branch**:
-   ```bash
-   git add .
-   git commit -m "Configure GitHub Pages deployment"
-   git push origin main
-   ```
-
-3. **Monitor deployment**:
-   - Go to repository → Actions tab
-   - Watch the workflow run
-   - Once complete, your site will be live at:
-     `https://HMTEUNIS.github.io/sketchvg/`
-
-### Updating the Base Path
-
-If your repository name changes or you deploy to a custom domain:
-
-1. **For different repository name**:
-   - Update `base` in `vite.config.ts`:
-     ```ts
-     base: '/your-repo-name/',
-     ```
-   - Update `pathSegmentsToKeep` in `public/404.html`:
-     ```js
-     var pathSegmentsToKeep = 1; // Keep this as 1 for repo-name structure
-     ```
-
-2. **For custom domain (root deployment)**:
-   - Update `base` in `vite.config.ts`:
-     ```ts
-     base: '/',
-     ```
-   - Update `pathSegmentsToKeep` in `public/404.html`:
-     ```js
-     var pathSegmentsToKeep = 0; // 0 for root domain
-     ```
-   - Remove or comment out the router base in `App.tsx`:
-     ```tsx
-     <WouterRouter> {/* Remove base prop */}
-     ```
+- **Repository Name**: `sketchvg`
+- **Base Path**: `/sketchvg/`
+- **Node Version**: 20 (configured in workflow)
+- **Build Output**: `dist/` directory
 
 ## Troubleshooting
 
-### Assets Not Loading
-- Check that `base` path in `vite.config.ts` matches your repository name
-- Verify the base path doesn't have trailing issues (should end with `/`)
-
-### 404 Errors on Refresh
-- Ensure `public/404.html` exists and is being copied to dist
-- Check that `pathSegmentsToKeep` in `404.html` matches your deployment structure
-
 ### Build Fails in GitHub Actions
-- Check the Actions tab for error messages
-- Verify Node.js version in workflow matches your local setup
-- Ensure all dependencies are in `package.json` (not just devDependencies)
 
-### Page Loads But Looks Broken
-- Open browser DevTools → Console
-- Check for 404 errors on asset loading
-- Verify all paths are using the correct base path
+1. Check the **Actions** tab for error messages
+2. Verify all dependencies are in `package.json`
+3. Ensure TypeScript compiles without errors locally:
+   ```bash
+   npm run build
+   ```
 
-## Files Modified for Deployment
+### Assets Not Loading
 
-1. `vite.config.ts` - Added base path
-2. `.github/workflows/deploy.yml` - Created deployment workflow
-3. `public/404.html` - Created for client-side routing
-4. `src/App.tsx` - Added router base path handling
-5. `package.json` - Already had build script
+- Verify the base path in `vite.config.ts` matches your repo name
+- Check that paths start with `/sketchvg/` in the built HTML
 
-## Verification
+### 404 Errors on Navigation
 
-After deployment, verify:
-- ✅ Homepage loads correctly
-- ✅ Assets (CSS, JS) load without 404 errors
-- ✅ Routes work on refresh (no 404)
-- ✅ Console has no path-related errors
+- Ensure `public/404.html` exists (it's already configured)
+- Verify `pathSegmentsToKeep = 1` in `public/404.html`
 
+## Files Modified
 
+- ✅ `vite.config.ts` - Base path configuration
+- ✅ `src/vite-env.d.ts` - Type definitions (NEW)
+- ✅ `src/App.tsx` - Router base path support
+- ✅ `.github/workflows/deploy.yml` - Deployment workflow (NEW)
+- ✅ `public/404.html` - Client-side routing support (NEW)
+- ✅ `package.json` - Removed unused dependencies
+- ✅ Removed old DrawingCanvas files
+
+## Next Steps
+
+1. Push the changes to GitHub
+2. Enable GitHub Actions in repository settings
+3. Wait for the first deployment to complete
+4. Visit your live site!

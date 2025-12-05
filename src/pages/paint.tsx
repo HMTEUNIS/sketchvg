@@ -9,7 +9,7 @@ import { COLOR_PALETTE } from "@/lib/drawingTypes";
 
 export default function Paint() {
   const [selectedTool, setSelectedTool] = useState<Tool>('pencil');
-  const [selectedColor, setSelectedColor] = useState(COLOR_PALETTE[0].value);
+  const [selectedColor, setSelectedColor] = useState<string>(COLOR_PALETTE[0].value);
   const [brushSize, setBrushSize] = useState(8);
   const [shapeMode, setShapeMode] = useState<ShapeMode>('outline');
   const [isColorPickerOpen, setIsColorPickerOpen] = useState(false);
@@ -93,7 +93,7 @@ export default function Paint() {
     }
   }, []);
 
-  const handleDrawAction = useCallback((action: DrawAction) => {
+  const handleDrawAction = useCallback((_action: DrawAction) => {
     // Clear redo stack when a new action is performed
     redoStackRef.current = [];
   }, []);

@@ -42,8 +42,8 @@ interface TooltipTriggerProps {
 
 const TooltipTrigger = React.forwardRef<HTMLElement, TooltipTriggerProps>(
   ({ asChild, children, ...props }, ref) => {
-    const [isOpen, setIsOpen] = React.useState(false)
-    const timeoutRef = React.useRef<NodeJS.Timeout>()
+    const [, setIsOpen] = React.useState(false)
+    const timeoutRef = React.useRef<ReturnType<typeof setTimeout>>()
 
     const handleMouseEnter = () => {
       const { delayDuration } = React.useContext(TooltipContext)
