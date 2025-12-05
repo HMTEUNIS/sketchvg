@@ -13,8 +13,6 @@ interface BrushSizeMenuProps {
 export function BrushSizeMenu({ selectedSize, onSizeSelect }: BrushSizeMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
 
-  const selectedBrush = BRUSH_SIZES.find(b => b.value === selectedSize);
-
   return (
     <>
       {/* Mobile: Collapsible button */}
