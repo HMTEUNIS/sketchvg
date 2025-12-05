@@ -70,6 +70,24 @@ export const DrawingCanvas = forwardRef<DrawingCanvasRef, DrawingCanvasProps>(({
     };
   }, []);
 
+  // Get touch position relative to canvas
+  const getTouchPosition = useCallback((e: React.TouchEvent<HTMLCanvasElement>): Point => {
+    const canvas = canvasRef.current;
+    if (!canvas) return { x: 0, y: 0 };
+
+    const touch = e.touches[0] || e.changedTouches[0];
+    if (!touch) return { x: 0, y: 0 };
+
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = canvas.width / rect.width;
+    const scaleY = canvas.height / rect.height;
+
+    return {
+      x: (touch.clientX - rect.left) * scaleX,
+      y: (touch.clientY - rect.top) * scaleY,
+    };
+  }, []);
+
   // Save current state to history
   const saveToHistory = useCallback(() => {
     const ctx = getContext();
@@ -384,6 +402,165 @@ export const DrawingCanvas = forwardRef<DrawingCanvasRef, DrawingCanvasProps>(({
     }
   }, [isDrawing]);
 
+  // Handle touch start
+  const handleTouchStart = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault(); // Prevent scrolling/zooming
+    const point = getTouchPosition(e);
+    const ctx = getContext();
+    if (!ctx) return;
+
+    if (tool === 'fill') {
+      floodFill(point.x, point.y, color);
+      onDrawAction({
+        type: tool,
+        color,
+        brushSize,
+        shapeMode,
+        points: [point],
+        startPoint: point,
+        endPoint: point,
+      });
+      return;
+    }
+
+    setIsDrawing(true);
+    setStartPoint(point);
+    setCurrentPoints([point]);
+
+    // Save state before drawing
+    saveToHistory();
+    
+    // For shape tools, save the current state for preview
+    if (tool === 'line' || tool === 'rectangle' || tool === 'circle') {
+      const canvas = canvasRef.current;
+      if (canvas) {
+        setPreviewImageData(ctx.getImageData(0, 0, canvas.width, canvas.height));
+      }
+    }
+  }, [
+    getTouchPosition,
+    getContext,
+    tool,
+    color,
+    brushSize,
+    shapeMode,
+    floodFill,
+    saveToHistory,
+    onDrawAction,
+  ]);
+
+  // Handle touch move
+  const handleTouchMove = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault(); // Prevent scrolling
+    if (!isDrawing || !startPoint) return;
+
+    const point = getTouchPosition(e);
+    const ctx = getContext();
+    if (!ctx) return;
+
+    if (tool === 'pencil' || tool === 'eraser') {
+      const lastPoint = currentPoints[currentPoints.length - 1] || startPoint;
+      drawLine(ctx, lastPoint, point, tool === 'eraser');
+      setCurrentPoints(prev => [...prev, point]);
+    } else if (tool === 'line' || tool === 'rectangle' || tool === 'circle') {
+      // Restore the preview state before drawing the shape
+      if (previewImageData) {
+        ctx.putImageData(previewImageData, 0, 0);
+      }
+
+      // Draw the shape preview
+      if (tool === 'line') {
+        drawStraightLine(ctx, startPoint, point);
+      } else if (tool === 'rectangle') {
+        drawRectangle(ctx, startPoint, point, shapeMode);
+      } else if (tool === 'circle') {
+        drawCircle(ctx, startPoint, point, shapeMode);
+      }
+    }
+  }, [
+    isDrawing,
+    startPoint,
+    currentPoints,
+    getTouchPosition,
+    getContext,
+    tool,
+    shapeMode,
+    previewImageData,
+    drawLine,
+    drawStraightLine,
+    drawRectangle,
+    drawCircle,
+  ]);
+
+  // Handle touch end
+  const handleTouchEnd = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    if (!isDrawing || !startPoint) {
+      setIsDrawing(false);
+      return;
+    }
+
+    const point = getTouchPosition(e);
+    const ctx = getContext();
+
+    if (ctx && (tool === 'line' || tool === 'rectangle' || tool === 'circle')) {
+      // Restore and draw final shape
+      if (previewImageData) {
+        ctx.putImageData(previewImageData, 0, 0);
+      }
+
+      if (tool === 'line') {
+        drawStraightLine(ctx, startPoint, point);
+      } else if (tool === 'rectangle') {
+        drawRectangle(ctx, startPoint, point, shapeMode);
+      } else if (tool === 'circle') {
+        drawCircle(ctx, startPoint, point, shapeMode);
+      }
+    }
+
+    // Record the action
+    onDrawAction({
+      type: tool,
+      color,
+      brushSize,
+      shapeMode,
+      points: currentPoints,
+      startPoint,
+      endPoint: point,
+    });
+
+    setIsDrawing(false);
+    setStartPoint(null);
+    setCurrentPoints([]);
+    setPreviewImageData(null);
+  }, [
+    isDrawing,
+    startPoint,
+    currentPoints,
+    getTouchPosition,
+    getContext,
+    tool,
+    shapeMode,
+    previewImageData,
+    color,
+    brushSize,
+    onDrawAction,
+    drawStraightLine,
+    drawRectangle,
+    drawCircle,
+  ]);
+
+  // Handle touch cancel (similar to mouse leave)
+  const handleTouchCancel = useCallback((e: React.TouchEvent<HTMLCanvasElement>) => {
+    e.preventDefault();
+    if (isDrawing) {
+      setIsDrawing(false);
+      setStartPoint(null);
+      setCurrentPoints([]);
+      setPreviewImageData(null);
+    }
+  }, [isDrawing]);
+
   // Handle undo - using proper trigger detection
   useEffect(() => {
     if (!isInitialized.current) return;
@@ -524,6 +701,10 @@ export const DrawingCanvas = forwardRef<DrawingCanvasRef, DrawingCanvasProps>(({
         onMouseMove={handleMouseMove}
         onMouseUp={handleMouseUp}
         onMouseLeave={handleMouseLeave}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={handleTouchCancel}
         className="bg-white shadow-lg rounded-md"
         style={{ 
           cursor: getCursorStyle(),
@@ -531,6 +712,7 @@ export const DrawingCanvas = forwardRef<DrawingCanvasRef, DrawingCanvasProps>(({
           maxHeight: '100%',
           width: '100%',
           height: '100%',
+          touchAction: 'none', // Prevent default touch behaviors (scrolling, zooming)
         }}
         data-testid="drawing-canvas"
       />
