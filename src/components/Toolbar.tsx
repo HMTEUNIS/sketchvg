@@ -40,10 +40,11 @@ export function Toolbar({
 
   return (
     <aside 
-      className="w-20 bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 gap-2"
+      className="w-20 bg-sidebar border-r border-sidebar-border flex flex-col items-center py-4 gap-2 overflow-y-auto overflow-x-hidden h-full"
       role="toolbar"
       aria-label="Drawing tools"
       data-testid="toolbar"
+      style={{ WebkitOverflowScrolling: 'touch' }}
     >
       {/* Drawing Tools */}
       <div className="flex flex-col items-center gap-2">

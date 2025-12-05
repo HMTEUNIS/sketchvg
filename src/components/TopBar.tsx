@@ -1,5 +1,6 @@
 import { ColorPalette } from "./ColorPalette";
 import { BrushSizeSelector } from "./BrushSizeSelector";
+import { BrushSizeMenu } from "./BrushSizeMenu";
 import { ActionButtons } from "./ActionButtons";
 import { Separator } from "@/components/ui/separator";
 
@@ -43,10 +44,20 @@ export function TopBar({
           onColorPickerOpen={onColorPickerOpen}
         />
         <Separator orientation="vertical" className="h-8" />
-        <BrushSizeSelector
-          selectedSize={brushSize}
-          onSizeSelect={onBrushSizeSelect}
-        />
+        {/* Desktop: Show full brush size selector */}
+        <div className="hidden md:block">
+          <BrushSizeSelector
+            selectedSize={brushSize}
+            onSizeSelect={onBrushSizeSelect}
+          />
+        </div>
+        {/* Mobile: Show collapsible menu */}
+        <div className="md:hidden">
+          <BrushSizeMenu
+            selectedSize={brushSize}
+            onSizeSelect={onBrushSizeSelect}
+          />
+        </div>
       </div>
 
       {/* Right section: Action buttons */}
